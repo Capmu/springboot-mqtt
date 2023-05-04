@@ -20,6 +20,12 @@ public class MqttService {
     @Value("${mqtt.topic}")
     private String topic;
 
+    @Value("${mqtt.username}")
+    private String username;
+
+    @Value("${mqtt.password}")
+    private String password;
+
     public void sendMqttMessage() throws MqttException {
 
         IMqttClient client = getMqttClient();
@@ -28,7 +34,12 @@ public class MqttService {
                 client.connect();
             }
             MqttMessage msg = buildMqttMessage();
+
+            // 0 – “at most once” semantics, also known as “fire-and-forget”. Use this option when message loss is acceptable, as it does not require any kind of acknowledgment or persistence
+            // 1 – “at least once” semantics. Use this option when message loss is not acceptable and your subscribers can handle duplicates
+            // 2 – “exactly once” semantics. Use this option when message loss is not acceptable and your subscribers cannot handle duplicates
             msg.setQos(0);
+
             msg.setRetained(true);
             client.publish(topic, msg);
         } catch (MqttException ex) {
@@ -45,15 +56,15 @@ public class MqttService {
         return new MqttMessage(payload);
     }
 
-    private IMqttClient getMqttClient() throws MqttException {
+    public IMqttClient getMqttClient() throws MqttException {
         String publisherId = UUID.randomUUID().toString(); //using a new client ID for each request is better
         IMqttClient client = new MqttClient(mqttServerUrl, publisherId, new MemoryPersistence());
         MqttConnectOptions options = new MqttConnectOptions();
         options.setAutomaticReconnect(true);
         options.setCleanSession(true);
         options.setConnectionTimeout(10);
-        options.setUserName("test");
-        options.setPassword("test".toCharArray());
+        options.setUserName(username);
+        options.setPassword(password.toCharArray());
 
         client.connect(options);
 
