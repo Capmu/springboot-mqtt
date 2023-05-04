@@ -1,5 +1,6 @@
 package com.capmu.mqtt.service;
 
+import com.capmu.mqtt.util.JsonUtil;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,7 +41,7 @@ public class MqttService {
         sampleMessage.put("message", "Sample message");
         sampleMessage.put("createdDate", new Date().toString());
 
-        byte[] payload = sampleMessage.toString().getBytes();
+        byte[] payload = JsonUtil.convertMapToJson(sampleMessage).getBytes();
         return new MqttMessage(payload);
     }
 
